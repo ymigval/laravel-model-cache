@@ -1,0 +1,18 @@
+# Laravel specific
+/vendor
+
+# IDEs and editors
+/.fleet
+/.idea
+/.vscode
+/.phpstorm.meta.php
+/_ide_helper.php
+/_ide_helper_models.php
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+
+# Keep these directories
+!.gitignore
