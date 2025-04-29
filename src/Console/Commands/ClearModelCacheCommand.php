@@ -1,10 +1,9 @@
 <?php
 
-namespace Ymigval\ModelCache\Console\Commands;
+namespace YMigVal\LaravelModelCache\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
 
 class ClearModelCacheCommand extends Command
 {
@@ -13,7 +12,7 @@ class ClearModelCacheCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'model:cache-clear {model? : The model class name (optional)}';
+    protected $signature = 'mcache:flush {model? : The model class name (optional)}';
 
     /**
      * The console command description.
@@ -56,8 +55,12 @@ class ClearModelCacheCommand extends Command
         try {
             $model = new $modelClass();
             $tableName = $model->getTable();
-            
-            if (method_exists($model, 'flushModelCache')) {
+
+            if (method_exists($model, 'flushCache')) {
+                $model->flushCache();
+                $this->info("Cache cleared for model: {$modelClass}");
+            } elseif (method_exists($model, 'flushModelCache')) {
+                // For backward compatibility
                 $model->flushModelCache();
                 $this->info("Cache cleared for model: {$modelClass}");
             } else {

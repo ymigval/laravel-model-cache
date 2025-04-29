@@ -15,7 +15,7 @@ class UsersController extends Controller
     public function index()
     {
         // This will use the cached query results
-        $users = User::active()->get();
+        $users = User::active()->getFromCache();
         
         return view('users.index', compact('users'));
     }
@@ -28,7 +28,7 @@ class UsersController extends Controller
     public function all()
     {
         // Cache the results for 2 hours
-        $users = User::remember(120)->get();
+        $users = User::remember(120)->getFromCache();
         
         return view('users.all', compact('users'));
     }

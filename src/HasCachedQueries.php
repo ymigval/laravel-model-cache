@@ -1,14 +1,17 @@
 <?php
 
-namespace Ymigval\ModelCache;
+namespace YMigVal\LaravelModelCache;
+
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Database\Query\Builder;
 
 trait HasCachedQueries
 {
     /**
      * Create a new Eloquent query builder for the model.
      *
-     * @param  \Illuminate\Database\Query\Builder  $query
-     * @return \Ymigval\ModelCache\CacheableBuilder
+     * @param Builder $query
+     * @return CacheableBuilder
      */
     public function newEloquentBuilder($query)
     {
@@ -24,23 +27,23 @@ trait HasCachedQueries
     {
         // Flush the cache when a model is created
         static::created(function ($model) {
-            $model->flushModelCache();
+            $model->flushCache();
         });
 
         // Flush the cache when a model is updated
         static::updated(function ($model) {
-            $model->flushModelCache();
+            $model->flushCache();
         });
 
         // Flush the cache when a model is deleted
         static::deleted(function ($model) {
-            $model->flushModelCache();
+            $model->flushCache();
         });
 
         // Flush the cache when a model is restored
         if (method_exists(static::class, 'restored')) {
             static::restored(function ($model) {
-                $model->flushModelCache();
+                $model->flushCache();
             });
         }
     }
@@ -49,8 +52,19 @@ trait HasCachedQueries
      * Flush the cache for this model.
      *
      * @return void
+     * @deprecated Use flushCache() instead
      */
     public function flushModelCache()
+    {
+        $this->flushCache();
+    }
+
+    /**
+     * Flush the cache for this model.
+     *
+     * @return bool
+     */
+    public function flushCache()
     {
         $cache = $this->getCacheDriver();
         $tags = [
@@ -60,14 +74,16 @@ trait HasCachedQueries
         ];
 
         if (method_exists($cache, 'tags')) {
-            $cache->tags($tags)->flush();
+            return $cache->tags($tags)->flush();
         }
+
+        return false;
     }
 
     /**
      * Get the cache driver to use.
      *
-     * @return \Illuminate\Contracts\Cache\Repository
+     * @return Repository
      */
     protected function getCacheDriver()
     {

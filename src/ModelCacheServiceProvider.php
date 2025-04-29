@@ -1,9 +1,9 @@
 <?php
 
-namespace Ymigval\ModelCache;
+namespace YMigVal\LaravelModelCache;
 
 use Illuminate\Support\ServiceProvider;
-use Ymigval\ModelCache\Console\Commands\ClearModelCacheCommand;
+use Ymigval\LaravelModelCache\Console\Commands\ClearModelCacheCommand;
 
 class ModelCacheServiceProvider extends ServiceProvider
 {

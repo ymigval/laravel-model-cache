@@ -1,20 +1,29 @@
 <?php
 
-namespace Ymigval\ModelCache;
+namespace YMigVal\LaravelModelCache;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
 
+/**
+ * @deprecated This trait is deprecated and will be removed in a future version.
+ * Use the HasCachedQueries trait instead.
+ */
 trait Cacheable
 {
     /**
      * Boot the trait.
      *
      * @return void
+     * @deprecated Use HasCachedQueries instead
      */
     public static function bootCacheable()
     {
+        trigger_error(
+            'The Cacheable trait is deprecated. Use HasCachedQueries instead.',
+            E_USER_DEPRECATED
+        );
+        
         // Flush the cache when a model is created
         static::created(function ($model) {
             $model->flushModelCache();
@@ -43,9 +52,15 @@ trait Cacheable
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return \Illuminate\Database\Eloquent\Builder
+     * @deprecated Use HasCachedQueries instead
      */
     public function scopeCached($query)
     {
+        trigger_error(
+            'The Cacheable trait is deprecated. Use HasCachedQueries instead.',
+            E_USER_DEPRECATED
+        );
+        
         if (!$this->shouldCache()) {
             return $query;
         }
@@ -74,6 +89,7 @@ trait Cacheable
      * Flush the cache for this model.
      *
      * @return void
+     * @deprecated Use HasCachedQueries instead
      */
     public function flushModelCache()
     {
@@ -90,6 +106,7 @@ trait Cacheable
      *
      * @param \Illuminate\Database\Eloquent\Builder $query
      * @return string
+     * @deprecated Use HasCachedQueries instead
      */
     protected function generateCacheKey(Builder $query)
     {
@@ -104,6 +121,7 @@ trait Cacheable
      * Generate cache tags for the model.
      *
      * @return array
+     * @deprecated Use HasCachedQueries instead
      */
     protected function generateCacheTags()
     {
@@ -118,6 +136,7 @@ trait Cacheable
      * Get the cache driver to use.
      *
      * @return \Illuminate\Contracts\Cache\Repository
+     * @deprecated Use HasCachedQueries instead
      */
     protected function getCacheDriver()
     {
@@ -134,6 +153,7 @@ trait Cacheable
      * Determine if caching is enabled.
      *
      * @return bool
+     * @deprecated Use HasCachedQueries instead
      */
     protected function shouldCache()
     {

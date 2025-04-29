@@ -4,7 +4,8 @@ namespace App\Models;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use YourVendor\ModelCache\HasCachedQueries;
+use YMigVal\LaravelModelCache\HasCachedQueries;
+
 
 class User extends Authenticatable
 {
