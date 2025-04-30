@@ -42,15 +42,34 @@ class CacheableBuilder extends Builder
         $cacheTags = $this->getCacheTags();
         $cache = $this->getCacheDriver();
 
-        if ($cacheTags && method_exists($cache, 'tags')) {
+        // Check if the cache driver supports tags
+        $supportsTags = $this->supportsTags($cache);
+
+        if ($cacheTags && $supportsTags) {
             return $cache->tags($cacheTags)->remember($cacheKey, $minutes * 60, function () use ($columns) {
                 return $this->getWithoutCache($columns);
             });
         }
 
+        // Fallback for drivers that don't support tagging
         return $cache->remember($cacheKey, $minutes * 60, function () use ($columns) {
             return $this->getWithoutCache($columns);
         });
+    }
+
+    /**
+     * Check if the cache driver supports tags.
+     *
+     * @param \Illuminate\Contracts\Cache\Repository $cache
+     * @return bool
+     */
+    protected function supportsTags($cache)
+    {
+        try {
+            return method_exists($cache, 'tags') && $cache->supportsTags();
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 
     /**
@@ -86,8 +105,12 @@ class CacheableBuilder extends Builder
      */
     public function getCacheKey($columns = ['*'])
     {
-        $key = [
-            config('model-cache.cache_key_prefix', 'model_cache_'),
+        // This is the prefix defined in our package config
+        $configPrefix = config('model-cache.cache_key_prefix', 'model_cache_');
+
+        // Create unique components for our key
+        $keyComponents = [
+            $configPrefix,
             $this->model->getTable(),
             $this->toSql(),
             serialize($this->getBindings()),
@@ -95,7 +118,75 @@ class CacheableBuilder extends Builder
             app()->getLocale(), // Add locale for multilingual sites
         ];
 
-        return md5(implode('|', $key));
+        // Create a hash from all components
+        $uniqueKey = md5(implode('|', $keyComponents));
+
+        // Return only the unique hash - Laravel will handle adding its own prefix
+        return $uniqueKey;
+    }
+
+    /**
+     * Flush the cache for this specific query.
+     *
+     * This allows flushing only the cache for a specific query pattern like:
+     * Model::where('condition', $value)->flushCache();
+     *
+     * @param array $columns
+     * @return bool
+     */
+    public function flushQueryCache($columns = ['*'])
+    {
+        try {
+            // Get the specific key for this query
+            $cacheKey = $this->getCacheKey($columns);
+            $cache = $this->getCacheDriver();
+
+            // Log the operation if logger is available
+            if (function_exists('logger')) {
+                logger()->info("Flushing specific query cache: " . $cacheKey);
+                logger()->debug("SQL: " . $this->toSql());
+                logger()->debug("Bindings: " . json_encode($this->getBindings()));
+            }
+
+            // Forget this specific key
+            $result = $cache->forget($cacheKey);
+
+            // Also try with tags if supported
+            $cacheTags = $this->getCacheTags();
+            if ($cacheTags && $this->supportsTags($cache)) {
+                try {
+                    // Generate tags specific to this query to be more precise
+                    $queryTags = $cacheTags;
+                    $queryTags[] = md5($this->toSql() . serialize($this->getBindings()));
+
+                    // Attempt to flush by query-specific tags
+                    $cache->tags($queryTags)->flush();
+                } catch (\Exception $e) {
+                    // If this fails, we already tried the direct key removal above
+                    if (function_exists('logger')) {
+                        logger()->debug("Could not flush by query tags: " . $e->getMessage());
+                    }
+                }
+            }
+
+            return $result;
+        } catch (\Exception $e) {
+            if (function_exists('logger')) {
+                logger()->error("Error flushing query cache: " . $e->getMessage());
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Alias for flushQueryCache for backward compatibility with existing code.
+     *
+     * @param array $columns
+     * @return bool
+     */
+    public function flushCache($columns = ['*'])
+    {
+        return $this->flushQueryCache($columns);
     }
 
     /**
@@ -146,32 +237,19 @@ class CacheableBuilder extends Builder
      */
     protected function getCacheDriver()
     {
-        $cacheStore = config('model-cache.cache_store');
+        try {
+            $cacheStore = config('model-cache.cache_store');
 
-        if ($cacheStore) {
-            return Cache::store($cacheStore);
+            if ($cacheStore) {
+                return Cache::store($cacheStore);
+            }
+
+            return Cache::store();
+        } catch (\Exception $e) {
+            // If there's an issue with the configured cache driver,
+            // fall back to the default driver
+            return Cache::store(config('cache.default'));
         }
-
-        return Cache::store();
-    }
-
-    /**
-     * Clear the cache for this model.
-     *
-     * @return bool
-     */
-    public function flushCache()
-    {
-        $cacheTags = $this->getCacheTags();
-        $cache = $this->getCacheDriver();
-
-        if ($cacheTags && method_exists($cache, 'tags')) {
-            return $cache->tags($cacheTags)->flush();
-        }
-
-        // When not using tags, we can't selectively flush the cache
-        // This is why using cache tags is recommended
-        return false;
     }
 
     /**
@@ -205,8 +283,13 @@ class CacheableBuilder extends Builder
             return parent::paginate($perPage, $columns, $pageName, $page);
         };
 
-        if ($cacheTags && method_exists($cache, 'tags')) {
-            return $cache->tags($cacheTags)->remember($cacheKey, $minutes * 60, $callback);
+        try {
+            // Check if the cache driver supports tags
+            if ($cacheTags && $this->supportsTags($cache)) {
+                return $cache->tags($cacheTags)->remember($cacheKey, $minutes * 60, $callback);
+            }
+        } catch (\BadMethodCallException $e) {
+            // If tags are not supported, we'll fall through to the default behavior
         }
 
         return $cache->remember($cacheKey, $minutes * 60, $callback);

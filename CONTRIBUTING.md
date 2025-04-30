@@ -35,7 +35,7 @@ the [Laravel Code of Conduct](https://laravel.com/docs/contributions#code-of-con
 
 ### Requirements
 
-- PHP 7.3 or higher
+- PHP ^7.4, ^8.0, ^8.1, ^8.2, or ^8.3
 - Laravel 8.x, 9.x, 10.x, 11.x, or 12.x
 - Composer
 

@@ -22,7 +22,7 @@ invalidation when models are created, updated, deleted, or restored.
 
 ## Requirements
 
-- PHP 7.3 or higher
+- PHP ^7.4, ^8.0, ^8.1, ^8.2, or ^8.3
 - Laravel 8.x, 9.x, 10.x, 11.x, or 12.x
 
 ## Installation
@@ -67,11 +67,12 @@ provider in : `config/app.php`
 This package uses Laravel's tagging system for cache, so you must use a cache driver that supports tags:
 
 1. **Redis** (Recommended)
-    - Offers excellent performance and tag support
-    - Configure in `.env`:
+   - Offers excellent performance and tag support
+   - Configure in `.env`:
 
 ``` 
-     CACHE_DRIVER=redis
+     CACHE_STORE=redis
+     
      REDIS_CLIENT=phpredis  # or predis
      REDIS_HOST=127.0.0.1
      REDIS_PASSWORD=null
@@ -79,18 +80,18 @@ This package uses Laravel's tagging system for cache, so you must use a cache dr
 ```
 
 2. **Memcached**
-    - Another good option with tag support
-    - Configure in `.env`:
+   - Another good option with tag support
+   - Configure in `.env`:
 
 ``` 
-     CACHE_DRIVER=memcached
+     CACHE_STORE=memcached
      MEMCACHED_HOST=127.0.0.1
      MEMCACHED_PORT=11211
 ```
 
 3. **Database**
-    - Supports tags but slower than Redis/Memcached
-    - Requires cache table creation:
+   - Supports tags but slower than Redis/Memcached
+   - Requires cache table creation:
 
 ``` 
      php artisan cache:table
@@ -100,7 +101,7 @@ This package uses Laravel's tagging system for cache, so you must use a cache dr
 - Configure in `.env`:
 
 ``` 
-     CACHE_DRIVER=database
+     CACHE_STORE=database
 ```
 
 4. **File** and **Array** drivers **DO NOT** support tags and will not work correctly with this package.
@@ -218,13 +219,14 @@ package.
 ## How the Command Works
 
 1. **Tag-Based Clearing**
-    - The command uses cache tags to efficiently clear only relevant cache entries
-    - Tags are structured as ['model_cache', ModelClassName, TableName]
-    - This is efficient as it only removes cache related to the specified model
+   - The command uses cache tags to efficiently clear only relevant cache entries
+   - Tags are structured as ['model_cache', ModelClassName, TableName]
+   - This is efficient as it only removes cache related to the specified model
 
 2. **Fallback for Non-Tag-Supporting Drivers**
-    - For cache drivers that don't support tags (File, Database), the command falls back to clearing all cache
-    - The command will display a warning if your cache driver doesn't support tags
+   - For cache drivers that don't support tags (File, Database), the command falls back to clearing all cache
+   - The command will display a warning and ask for confirmation before proceeding with a full cache clear
+   - This is necessary because without tag support, it's not possible to selectively clear only model-related cache
 
 ## Programmatic Cache Clearing
 
