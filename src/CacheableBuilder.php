@@ -559,6 +559,237 @@ class CacheableBuilder extends Builder
 
         return $cache->remember($cacheKey, $minutes * 60, $callback);
     }
+    
+    /**
+     * Retrieve the "count" result of the query from cache.
+     *
+     * @param string $columns
+     * @return int
+     */
+    public function countFromCache($columns = '*')
+    {
+        $cacheKey = $this->getCacheKey([
+            'count',
+            is_array($columns) ? implode(',', $columns) : $columns
+        ]);
+    
+        $minutes = $this->cacheMinutes ?: config('model-cache.cache_duration', 60);
+        $cacheTags = $this->getCacheTags();
+        $cache = $this->getCacheDriver();
+    
+        $callback = function () use ($columns) {
+            return parent::count($columns);
+        };
+    
+        if ($cacheTags && $this->supportsTags($cache)) {
+            return $cache->tags($cacheTags)->remember($cacheKey, $minutes * 60, $callback);
+        }
+    
+        return $cache->remember($cacheKey, $minutes * 60, $callback);
+    }
+    
+    /**
+     * Retrieve the sum of the values of a given column from cache.
+     *
+     * @param string $column
+     * @return mixed
+     */
+    public function sumFromCache($column)
+    {
+        $cacheKey = $this->getCacheKey([
+            'sum',
+            $column
+        ]);
+    
+        $minutes = $this->cacheMinutes ?: config('model-cache.cache_duration', 60);
+        $cacheTags = $this->getCacheTags();
+        $cache = $this->getCacheDriver();
+    
+        $callback = function () use ($column) {
+            return parent::sum($column);
+        };
+    
+        if ($cacheTags && $this->supportsTags($cache)) {
+            return $cache->tags($cacheTags)->remember($cacheKey, $minutes * 60, $callback);
+        }
+    
+        return $cache->remember($cacheKey, $minutes * 60, $callback);
+    }
+    
+    /**
+     * Retrieve the maximum value of a given column from cache.
+     *
+     * @param string $column
+     * @return mixed
+     */
+    public function maxFromCache($column)
+    {
+        $cacheKey = $this->getCacheKey([
+            'max',
+            $column
+        ]);
+    
+        $minutes = $this->cacheMinutes ?: config('model-cache.cache_duration', 60);
+        $cacheTags = $this->getCacheTags();
+        $cache = $this->getCacheDriver();
+    
+        $callback = function () use ($column) {
+            return parent::max($column);
+        };
+    
+        if ($cacheTags && $this->supportsTags($cache)) {
+            return $cache->tags($cacheTags)->remember($cacheKey, $minutes * 60, $callback);
+        }
+    
+        return $cache->remember($cacheKey, $minutes * 60, $callback);
+    }
+    
+    /**
+     * Retrieve the minimum value of a given column from cache.
+     *
+     * @param string $column
+     * @return mixed
+     */
+    public function minFromCache($column)
+    {
+        $cacheKey = $this->getCacheKey([
+            'min',
+            $column
+        ]);
+    
+        $minutes = $this->cacheMinutes ?: config('model-cache.cache_duration', 60);
+        $cacheTags = $this->getCacheTags();
+        $cache = $this->getCacheDriver();
+    
+        $callback = function () use ($column) {
+            return parent::min($column);
+        };
+    
+        if ($cacheTags && $this->supportsTags($cache)) {
+            return $cache->tags($cacheTags)->remember($cacheKey, $minutes * 60, $callback);
+        }
+    
+        return $cache->remember($cacheKey, $minutes * 60, $callback);
+    }
+    
+    /**
+     * Retrieve the average of the values of a given column from cache.
+     *
+     * @param string $column
+     * @return mixed
+     */
+    public function avgFromCache($column)
+    {
+        $cacheKey = $this->getCacheKey([
+            'avg',
+            $column
+        ]);
+    
+        $minutes = $this->cacheMinutes ?: config('model-cache.cache_duration', 60);
+        $cacheTags = $this->getCacheTags();
+        $cache = $this->getCacheDriver();
+    
+        $callback = function () use ($column) {
+            return parent::avg($column);
+        };
+    
+        if ($cacheTags && $this->supportsTags($cache)) {
+            return $cache->tags($cacheTags)->remember($cacheKey, $minutes * 60, $callback);
+        }
+    
+        return $cache->remember($cacheKey, $minutes * 60, $callback);
+    }
+    
+    /**
+     * Override the count method to automatically use cache.
+     *
+     * @param string $columns
+     * @return int
+     */
+    public function count($columns = '*')
+    {
+        // Only use cache if cacheMinutes is not set to 0
+        if (isset($this->cacheMinutes) && $this->cacheMinutes === 0) {
+            return parent::count($columns);
+        }
+    
+        return $this->countFromCache($columns);
+    }
+    
+    /**
+     * Override the sum method to automatically use cache.
+     *
+     * @param string $column
+     * @return mixed
+     */
+    public function sum($column)
+    {
+        // Only use cache if cacheMinutes is not set to 0
+        if (isset($this->cacheMinutes) && $this->cacheMinutes === 0) {
+            return parent::sum($column);
+        }
+    
+        return $this->sumFromCache($column);
+    }
+    
+    /**
+     * Override the max method to automatically use cache.
+     *
+     * @param string $column
+     * @return mixed
+     */
+    public function max($column)
+    {
+        // Only use cache if cacheMinutes is not set to 0
+        if (isset($this->cacheMinutes) && $this->cacheMinutes === 0) {
+            return parent::max($column);
+        }
+    
+        return $this->maxFromCache($column);
+    }
+    
+    /**
+     * Override the min method to automatically use cache.
+     *
+     * @param string $column
+     * @return mixed
+     */
+    public function min($column)
+    {
+        // Only use cache if cacheMinutes is not set to 0
+        if (isset($this->cacheMinutes) && $this->cacheMinutes === 0) {
+            return parent::min($column);
+        }
+    
+        return $this->minFromCache($column);
+    }
+    
+    /**
+     * Override the avg method to automatically use cache.
+     *
+     * @param string $column
+     * @return mixed
+     */
+    public function avg($column)
+    {
+        // Only use cache if cacheMinutes is not set to 0
+        if (isset($this->cacheMinutes) && $this->cacheMinutes === 0) {
+            return parent::avg($column);
+        }
+    
+        return $this->avgFromCache($column);
+    }
+    
+    /**
+     * Alias for the "avg" method.
+     *
+     * @param string $column
+     * @return mixed
+     */
+    public function average($column)
+    {
+        return $this->avg($column);
+    }
 
     /**
      * Update records in the database and flush cache.
@@ -774,7 +1005,7 @@ class CacheableBuilder extends Builder
      * @param array $values
      * @return bool
      */
-    public function updateOrInsert(array $attributes, array $values = [])
+    public function updateOrInsert(array $attributes, $values = [])
     {
         // Execute the updateOrInsert operation
         $result = parent::updateOrInsert($attributes, $values);
