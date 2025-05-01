@@ -495,25 +495,3 @@ If you're using another caching package:
 2. Remove manual cache key generation code
 3. Replace custom cache retrieval methods with standard Eloquent methods or the explicit `getFromCache()` methods
 4. Remove manual cache invalidation code (this package handles it automatically)
-
-### Deprecated `Cacheable` Trait
-
-If you're using an older version of this package with the `Cacheable` trait:
-
-```php
-// Old deprecated approach
-use YMigVal\LaravelModelCache\Cacheable;
-
-class Post extends Model
-{
-    use Cacheable;
-}
-
-// New approach
-use YMigVal\LaravelModelCache\HasCachedQueries;
-
-class Post extends Model
-{
-    use HasCachedQueries;
-}
-```
