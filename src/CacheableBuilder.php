@@ -352,8 +352,18 @@ class CacheableBuilder extends Builder
             app()->getLocale(), // Add locale for multilingual sites
         ];
 
+        // Include eager loaded relationships in the cache key
+        if (count($this->eagerLoad) > 0) {
+            $keyComponents[] = 'with:' . serialize(array_keys($this->eagerLoad));
+        }
+    
         // Create a hash from all components
         $uniqueKey = md5(implode('|', $keyComponents));
+    
+        // Add debug logging if enabled
+        if (config('model-cache.debug_mode', false) && function_exists('logger')) {
+            logger()->debug("Generated cache key: {$uniqueKey} for query: {$this->toSql()} with bindings: " . json_encode($this->getBindings()) . " and relations: " . json_encode(array_keys($this->eagerLoad)));
+        }
 
         // Return only the unique hash - Laravel will handle adding its own prefix
         return $uniqueKey;

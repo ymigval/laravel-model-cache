@@ -468,7 +468,11 @@ $freshData = YourModel::withoutCache()->get();
 
 ### Q: Does this work with relationships?
 
-A: Yes, caching works with eager-loaded relationships and regular relationship queries.
+A: Yes, caching works with eager-loaded relationships and regular relationship queries. The package correctly generates unique cache keys for queries with different eager-loaded relationships, ensuring that `Model::get()` and `Model::with(['relation'])->get()` use different cache entries.
+
+### Q: How can I troubleshoot cache issues?
+
+A: You can enable debug mode in your configuration file to see detailed logs about cache keys being generated:
 
 ## Migrating from Other Caching Solutions
 

@@ -44,4 +44,15 @@ return [
     |
     */
     'enabled' => env('MODEL_CACHE_ENABLED', true),
+    
+    /*
+    |--------------------------------------------------------------------------
+    | Debug Mode
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, this will log detailed information about cache keys and
+    | queries being cached. Useful for troubleshooting cache-related issues.
+    |
+    */
+    'debug_mode' => env('MODEL_CACHE_DEBUG', false),
 ];
