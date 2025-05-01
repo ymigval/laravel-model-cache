@@ -66,18 +66,7 @@ class ClearModelCacheCommand extends Command
     
         try {
             // First check if the model has static flush methods
-            if (method_exists($modelClass, 'flushCacheStatic')) {
-                $this->info("Found static method: flushCacheStatic");
-                $result = $modelClass::flushCacheStatic();
-                if ($result) {
-                    $this->info("Cache cleared successfully for model: {$modelClass} using static method");
-                } else {
-                    $this->warn("Static method returned false - cache may not have been cleared completely");
-                    // Force a full cache clear as a backup
-                    $this->performFullCacheFlush();
-                }
-                return;
-            } elseif (method_exists($modelClass, 'flushModelCache') &&
+            if (method_exists($modelClass, 'flushModelCache') &&
                 is_callable([$modelClass, 'flushModelCache']) &&
                 (new \ReflectionMethod($modelClass, 'flushModelCache'))->isStatic()) {
                 // For backward compatibility - check if static flushModelCache exists
@@ -113,7 +102,7 @@ class ClearModelCacheCommand extends Command
             } elseif (method_exists($model, 'flushModelCache')) {
                 // For backward compatibility
                 $this->info("Found instance method: flushModelCache");
-                $result = $model->flushModelCache();
+                $result = $model::flushModelCache();
                 if ($result) {
                     $this->info("Cache cleared successfully for model: {$modelClass}");
                 } else {

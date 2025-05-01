@@ -17,6 +17,240 @@ class CacheableBuilder extends Builder
     protected $cacheMinutes;
 
     /**
+     * Create a new model instance and store it in the database.
+     *
+     * @param array $attributes
+     * @return \Illuminate\Database\Eloquent\Model|$this
+     */
+    public function create(array $attributes = [])
+    {
+        $model = parent::create($attributes);
+
+        // Flush cache after creating a model
+        if ($model && method_exists($model, 'flushModelCache')) {
+            $model->flushModelCache();
+        } else {
+            $this->flushQueryCache();
+        }
+
+        return $model;
+    }
+
+    /**
+     * Create a new instance of the model being queried.
+     *
+     * @param array $attributes
+     * @return \Illuminate\Database\Eloquent\Model|static
+     */
+    public function make(array $attributes = [])
+    {
+        return parent::make($attributes);
+    }
+
+    /**
+     * Create a new model instance and store it in the database without mass assignment protection.
+     *
+     * @param array $attributes
+     * @return \Illuminate\Database\Eloquent\Model|$this
+     */
+    public function forceCreate(array $attributes)
+    {
+        $model = parent::forceCreate($attributes);
+
+        // Flush cache after force creating a model
+        if ($model && method_exists($model, 'flushModelCache')) {
+            $model->flushModelCache();
+        } else {
+            $this->flushQueryCache();
+        }
+
+        return $model;
+    }
+
+    /**
+     * Get the first record matching the attributes or create it.
+     *
+     * @param array $attributes
+     * @param array $values
+     * @return \Illuminate\Database\Eloquent\Model|static
+     */
+    public function firstOrCreate(array $attributes = [], array $values = [])
+    {
+        $model = parent::firstOrCreate($attributes, $values);
+
+        // Flush cache if model was created (doesn't exist before)
+        if ($model->wasRecentlyCreated && method_exists($model, 'flushModelCache')) {
+            $model->flushModelCache();
+        } elseif ($model->wasRecentlyCreated) {
+            $this->flushQueryCache();
+        }
+
+        return $model;
+    }
+
+    /**
+     * Get the first record matching the attributes or instantiate it.
+     *
+     * @param array $attributes
+     * @param array $values
+     * @return \Illuminate\Database\Eloquent\Model|static
+     */
+    public function firstOrNew(array $attributes = [], array $values = [])
+    {
+        return parent::firstOrNew($attributes, $values);
+    }
+
+    /**
+     * Save a new model and return the instance.
+     *
+     * @param array $attributes
+     * @return \Illuminate\Database\Eloquent\Model|$this
+     */
+    public function save(array $attributes = [])
+    {
+        $instance = $this->newModelInstance($attributes);
+
+        $instance->save();
+
+        // Flush cache after saving
+        if (method_exists($instance, 'flushModelCache')) {
+            $instance->flushModelCache();
+        } else {
+            $this->flushQueryCache();
+        }
+
+        return $instance;
+    }
+
+    /**
+     * Save a new model without mass assignment protection and return the instance.
+     *
+     * @param array $attributes
+     * @return \Illuminate\Database\Eloquent\Model|$this
+     */
+    public function forceSave(array $attributes = [])
+    {
+        $instance = $this->newModelInstance();
+        $instance->forceFill($attributes)->save();
+
+        // Flush cache after saving
+        if (method_exists($instance, 'flushModelCache')) {
+            $instance->flushModelCache();
+        } else {
+            $this->flushQueryCache();
+        }
+
+        return $instance;
+    }
+
+    /**
+     * Save a collection of models to the database.
+     *
+     * @param array|\Illuminate\Support\Collection $models
+     * @return array|\Illuminate\Support\Collection
+     */
+    public function saveMany($models)
+    {
+        foreach ($models as $model) {
+            $model->save();
+        }
+
+        // Flush cache after saving multiple models
+        if (count($models) > 0) {
+            $model = $models[0];
+            if (method_exists($model, 'flushModelCache')) {
+                $model->flushModelCache();
+            } else {
+                $this->flushQueryCache();
+            }
+        }
+
+        return $models;
+    }
+
+    /**
+     * Create multiple instances of the model.
+     *
+     * @param array $records
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function createMany(array $records)
+    {
+        $instances = new Collection();
+
+        foreach ($records as $record) {
+            $instances->push($this->create($record));
+        }
+
+        return $instances;
+    }
+
+    /**
+     * Update records in the database without raising any events.
+     *
+     * @param array $values
+     * @return int
+     */
+    public function updateQuietly(array $values)
+    {
+        $model = $this->model;
+
+        $result = $model->withoutEvents(function () use ($values) {
+            return $this->update($values);
+        });
+
+        // Still flush cache even though events aren't fired
+        if ($result && method_exists($model, 'flushModelCache')) {
+            $model->flushModelCache();
+        } elseif ($result) {
+            $this->flushQueryCache();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Delete records from the database without raising any events.
+     *
+     * @return mixed
+     */
+    public function deleteQuietly()
+    {
+        $model = $this->model;
+
+        $result = $model->withoutEvents(function () {
+            return $this->delete();
+        });
+
+        // Still flush cache even though events aren't fired
+        if ($result && method_exists($model, 'flushModelCache')) {
+            $model->flushModelCache();
+        } elseif ($result) {
+            $this->flushQueryCache();
+        }
+
+        return $result;
+    }
+
+    /**
+     * Touch all of the related models for the relationship.
+     *
+     * @param null $column
+     * @return void
+     */
+    public function touch($column = null)
+    {
+        parent::touch($column);
+
+        // Flush cache
+        if (method_exists($this->model, 'flushModelCache')) {
+            $this->model->flushModelCache();
+        } else {
+            $this->flushQueryCache();
+        }
+    }
+
+    /**
      * Execute the query and get the first result from the cache.
      *
      * @param array $columns
@@ -128,8 +362,14 @@ class CacheableBuilder extends Builder
     /**
      * Flush the cache for this specific query.
      *
-     * This allows flushing only the cache for a specific query pattern like:
-     * Model::where('condition', $value)->flushCache();
+     * This method is called in two primary situations:
+     * 1. Explicitly by the user: Model::where('condition', $value)->flushCache();
+     * 2. Automatically after mass operations like update(), delete(), etc.
+     *
+     * The method attempts to clear the cache in three ways, in order of specificity:
+     * 1. First, it tries to remove the specific cache key for this query
+     * 2. If the cache driver supports tags, it tries to flush by model-specific tags
+     * 3. As a fallback, it calls the model's flushModelCache() method
      *
      * @param array $columns
      * @return bool
@@ -148,19 +388,33 @@ class CacheableBuilder extends Builder
                 logger()->debug("Bindings: " . json_encode($this->getBindings()));
             }
 
-            // Forget this specific key
+            $success = false;
+
+            // First try to forget this specific key
             $result = $cache->forget($cacheKey);
+            if ($result) {
+                $success = true;
+                if (function_exists('logger')) {
+                    logger()->debug("Successfully removed specific cache key: " . $cacheKey);
+                }
+            }
 
             // Also try with tags if supported
             $cacheTags = $this->getCacheTags();
             if ($cacheTags && $this->supportsTags($cache)) {
                 try {
-                    // Generate tags specific to this query to be more precise
+                    // First try model-specific tags
+                    $cache->tags($cacheTags)->flush();
+
+                    // Then try query-specific tags to be even more precise
                     $queryTags = $cacheTags;
                     $queryTags[] = md5($this->toSql() . serialize($this->getBindings()));
-
-                    // Attempt to flush by query-specific tags
                     $cache->tags($queryTags)->flush();
+
+                    $success = true;
+                    if (function_exists('logger')) {
+                        logger()->debug("Successfully flushed cache using tags for model: " . get_class($this->model));
+                    }
                 } catch (\Exception $e) {
                     // If this fails, we already tried the direct key removal above
                     if (function_exists('logger')) {
@@ -169,7 +423,18 @@ class CacheableBuilder extends Builder
                 }
             }
 
-            return $result;
+            // If both specific key and tags failed, try to flush related model cache
+            if (!$success) {
+                if (method_exists($this->model, 'flushModelCache')) {
+                    $this->model->flushModelCache();
+                    $success = true;
+                    if (function_exists('logger')) {
+                        logger()->info("Flushed entire model cache for: " . get_class($this->model));
+                    }
+                }
+            }
+
+            return $success || $result;
         } catch (\Exception $e) {
             if (function_exists('logger')) {
                 logger()->error("Error flushing query cache: " . $e->getMessage());
@@ -293,5 +558,370 @@ class CacheableBuilder extends Builder
         }
 
         return $cache->remember($cacheKey, $minutes * 60, $callback);
+    }
+
+    /**
+     * Update records in the database and flush cache.
+     *
+     * @param array $values
+     * @return int
+     */
+    public function update(array $values)
+    {
+        // Execute the update operation
+        $result = parent::update($values);
+
+        // Flush the cache for this model
+        if ($result) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after mass update for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Delete records from the database and flush cache.
+     *
+     * @return mixed
+     */
+    public function delete()
+    {
+        // Execute the delete operation
+        $result = parent::delete();
+
+        // Flush the cache for this model if any records were deleted
+        if ($result) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after mass delete for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Increment a column's value by a given amount and flush cache.
+     *
+     * @param string $column
+     * @param float|int $amount
+     * @param array $extra
+     * @return int
+     */
+    public function increment($column, $amount = 1, array $extra = [])
+    {
+        // Execute the increment operation
+        $result = parent::increment($column, $amount, $extra);
+
+        // Flush the cache for this model
+        if ($result) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after increment operation for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Decrement a column's value by a given amount and flush cache.
+     *
+     * @param string $column
+     * @param float|int $amount
+     * @param array $extra
+     * @return int
+     */
+    public function decrement($column, $amount = 1, array $extra = [])
+    {
+        // Execute the decrement operation
+        $result = parent::decrement($column, $amount, $extra);
+
+        // Flush the cache for this model
+        if ($result) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after decrement operation for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Insert new records into the database and flush cache.
+     *
+     * @param array $values
+     * @return bool
+     */
+    public function insert(array $values)
+    {
+        // Execute the insert operation
+        $result = parent::insert($values);
+
+        // Flush the cache for this model if insert was successful
+        if ($result) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after insert operation for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Insert new records into the database while ignoring errors and flush cache.
+     *
+     * @param array $values
+     * @return int
+     */
+    public function insertOrIgnore(array $values)
+    {
+        // Execute the insertOrIgnore operation
+        $result = parent::insertOrIgnore($values);
+
+        // Flush the cache for this model if any records were inserted
+        if ($result > 0) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after insertOrIgnore operation for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Insert a new record and get the value of the primary key and flush cache.
+     *
+     * @param array $values
+     * @param string|null $sequence
+     * @return int
+     */
+    public function insertGetId(array $values, $sequence = null)
+    {
+        // Execute the insertGetId operation
+        $result = parent::insertGetId($values, $sequence);
+
+        // Flush the cache for this model
+        if ($result) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after insertGetId operation for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Insert or update a record matching the attributes, and fill it with values.
+     *
+     * @param array $attributes
+     * @param array $values
+     * @return bool
+     */
+    public function updateOrInsert(array $attributes, array $values = [])
+    {
+        // Execute the updateOrInsert operation
+        $result = parent::updateOrInsert($attributes, $values);
+
+        // Flush the cache for this model if operation was successful
+        if ($result) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after updateOrInsert operation for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Insert new records or update the existing ones and flush cache.
+     *
+     * @param array $values
+     * @param array|string $uniqueBy
+     * @param array|null $update
+     * @return int
+     */
+    public function upsert(array $values, $uniqueBy, $update = null)
+    {
+        // Check if upsert method exists in the parent (Laravel 8+)
+        if (!method_exists(get_parent_class($this), 'upsert')) {
+            throw new \BadMethodCallException('Method upsert() is not supported by the database driver.');
+        }
+
+        // Execute the upsert operation
+        $result = parent::upsert($values, $uniqueBy, $update);
+
+        // Flush the cache for this model if any records were affected
+        if ($result > 0) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after upsert operation for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Truncate the table and flush cache.
+     *
+     * @return void
+     */
+    public function truncate()
+    {
+        // Execute the truncate operation
+        parent::truncate();
+
+        // Always flush the cache after truncate
+        if (function_exists('logger')) {
+            logger()->info("Flushing cache after truncate operation for model: " . get_class($this->model));
+        }
+
+        // Try to flush the model cache
+        if (method_exists($this->model, 'flushModelCache')) {
+            $this->model->flushModelCache();
+        } else {
+            // Fallback to flushing the query cache
+            $this->flushQueryCache();
+        }
+    }
+
+    /**
+     * Force a hard delete on a soft deleted model and flush cache.
+     * This method overrides the forceDelete method present in the SoftDeletes trait.
+     *
+     * @return mixed
+     */
+    public function forceDelete()
+    {
+        // Check if the model uses SoftDeletes
+        if (!method_exists($this->model, 'runSoftDelete')) {
+            return $this->delete();
+        }
+
+        // Execute the force delete operation
+        $result = parent::forceDelete();
+
+        // Flush the cache for this model
+        if ($result) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after force delete for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Restore soft deleted models and flush cache.
+     * This method overrides the restore method present in the SoftDeletes trait.
+     *
+     * @return mixed
+     */
+    public function restore()
+    {
+        // Check if the model uses SoftDeletes
+        if (!method_exists($this->model, 'runSoftDelete')) {
+            return 0;
+        }
+
+        // Execute the restore operation
+        $result = parent::restore();
+
+        // Flush the cache for this model
+        if ($result) {
+            if (function_exists('logger')) {
+                logger()->info("Flushing cache after restore for model: " . get_class($this->model));
+            }
+
+            // Try to flush the model cache
+            if (method_exists($this->model, 'flushModelCache')) {
+                $this->model->flushModelCache();
+            } else {
+                // Fallback to flushing the query cache
+                $this->flushQueryCache();
+            }
+        }
+
+        return $result;
     }
 }

@@ -1,12 +1,30 @@
 {
     "name": "ymigval/laravel-model-cache",
     "description": "Laravel package for caching Eloquent model queries",
+    "homepage": "https://github.com/ymigval/laravel-model-cache",
+    "keywords": [
+        "redis",
+        "php",
+        "caching",
+        "memcached",
+        "laravel",
+        "performance",
+        "eloquent",
+        "orm",
+        "model",
+        "cache",
+        "laravel-package",
+        "database-caching",
+        "laravel-eloquent",
+        "query-cacher",
+        "model-cache"
+    ],
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "Your Name",
-            "email": "your.email@example.com"
+            "name": "Yordan",
+            "email": "banatube@gmail.com"
         }
     ],
     "minimum-stability": "dev",

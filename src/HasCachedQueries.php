@@ -17,9 +17,22 @@ trait HasCachedQueries
     {
         return new CacheableBuilder($query);
     }
-    
+
     /**
      * Boot the trait.
+     *
+     * This method registers event handlers for individual model operations that trigger Eloquent events:
+     * - created: When a new model is created via Model::create() or $model->save() on a new instance
+     * - updated: When an existing model is updated via $model->save() or $model->update()
+     * - saved: When a model is created or updated via $model->save()
+     * - deleted: When a model is deleted via $model->delete()
+     * - restored: When a soft-deleted model is restored via $model->restore()
+     *
+     * NOTE: Mass operations that don't retrieve models first (like Model::where(...)->update() or
+     * Model::where(...)->delete()) do not trigger these events. For these operations, the CacheableBuilder
+     * class overrides methods like update(), delete(), insert(), insertGetId(), insertOrIgnore(),
+     * updateOrInsert(), upsert(), truncate(), increment(), decrement(), forceDelete(), and restore()
+     * to ensure cache is properly invalidated in all scenarios.
      *
      * @return void
      */
@@ -27,34 +40,52 @@ trait HasCachedQueries
     {
         // Flush the cache when a model is created
         static::created(function ($model) {
-            $model->flushCache();
+            static::flushModelCache();
+            if (function_exists('logger')) {
+                logger()->info("Cache flushed after creation for model: " . get_class($model));
+            }
         });
 
         // Flush the cache when a model is updated
         static::updated(function ($model) {
-            $model->flushCache();
+            static::flushModelCache();
+            if (function_exists('logger')) {
+                logger()->info("Cache flushed after update for model: " . get_class($model));
+            }
+        });
+
+        // Flush the cache when a model is saved
+        static::saved(function ($model) {
+            static::flushModelCache();
+            if (function_exists('logger')) {
+                logger()->info("Cache flushed after update for model: " . get_class($model));
+            }
         });
 
         // Flush the cache when a model is deleted
         static::deleted(function ($model) {
-            $model->flushCache();
+            static::flushModelCache();
+            if (function_exists('logger')) {
+                logger()->info("Cache flushed after deletion for model: " . get_class($model));
+            }
         });
 
         // Flush the cache when a model is restored
-        if (method_exists(static::class, 'restored')) {
-            static::restored(function ($model) {
-                $model->flushCache();
-            });
-        }
+        static::registerModelEvent('restored', function ($model) {
+            static::flushModelCache();
+            if (function_exists('logger')) {
+                logger()->info("Cache flushed after restoration for model: " . get_class($model));
+            }
+        });
     }
 
     /**
      * Static method to flush cache for the model.
-     * This allows calling Model::flushCacheStatic() directly without an instance.
+     * This allows calling Model::flushModelCache() directly without an instance.
      *
      * @return bool
      */
-    public static function flushCacheStatic()
+    public static function flushModelCache()
     {
         try {
             // Get model info without creating a full instance
