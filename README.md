@@ -107,7 +107,17 @@ This package uses Laravel's tagging system for cache, so you must use a cache dr
      CACHE_STORE=database
 ```
 
-4. **File** and **Array** drivers **DO NOT** support tags and will not work correctly with this package.
+4. **File** and **Array** drivers do not support tags, but the package includes fallback mechanisms that make them
+   compatible:
+   - These drivers will work for basic caching functionality
+   - When using these drivers, cache invalidation will clear the entire cache rather than just specific model entries
+   - While not as efficient as tag-supporting drivers, they can be used in development or when other drivers are not
+     available
+   - Configure in `.env`:
+
+``` 
+     CACHE_STORE=file
+```
 
 ## Optional Configuration in Config File
 
