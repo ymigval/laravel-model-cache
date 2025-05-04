@@ -52,7 +52,7 @@ trait ModelRelationships
         if (method_exists($model, 'flushModelCache')) {
             $model->flushModelCache();
 
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Cache flushed after relationship operation for model: " . get_class($model));
             }
         }
@@ -78,7 +78,7 @@ trait ModelRelationships
         if (method_exists($this, 'flushModelCache')) {
             $this->flushModelCache();
 
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Cache flushed after sync operation for model: " . get_class($this));
             }
         }
@@ -107,7 +107,7 @@ trait ModelRelationships
         if (method_exists($this, 'flushModelCache')) {
             $this->flushModelCache();
 
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Cache flushed after attach operation for model: " . get_class($this));
             }
         }
@@ -133,7 +133,7 @@ trait ModelRelationships
         if (method_exists($this, 'flushModelCache')) {
             $this->flushModelCache();
 
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Cache flushed after detach operation for model: " . get_class($this));
             }
         }
