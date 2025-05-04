@@ -392,7 +392,7 @@ class CacheableBuilder extends Builder
             $cache = $this->getCacheDriver();
 
             // Log the operation if logger is available
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing specific query cache: " . $cacheKey);
                 logger()->debug("SQL: " . $this->toSql());
                 logger()->debug("Bindings: " . json_encode($this->getBindings()));
@@ -404,7 +404,7 @@ class CacheableBuilder extends Builder
             $result = $cache->forget($cacheKey);
             if ($result) {
                 $success = true;
-                if (function_exists('logger')) {
+                if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                     logger()->debug("Successfully removed specific cache key: " . $cacheKey);
                 }
             }
@@ -422,12 +422,12 @@ class CacheableBuilder extends Builder
                     $cache->tags($queryTags)->flush();
 
                     $success = true;
-                    if (function_exists('logger')) {
+                    if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                         logger()->debug("Successfully flushed cache using tags for model: " . get_class($this->model));
                     }
                 } catch (\Exception $e) {
                     // If this fails, we already tried the direct key removal above
-                    if (function_exists('logger')) {
+                    if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                         logger()->debug("Could not flush by query tags: " . $e->getMessage());
                     }
                 }
@@ -438,7 +438,7 @@ class CacheableBuilder extends Builder
                 if (method_exists($this->model, 'flushModelCache')) {
                     $this->model->flushModelCache();
                     $success = true;
-                    if (function_exists('logger')) {
+                    if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                         logger()->info("Flushed entire model cache for: " . get_class($this->model));
                     }
                 }
@@ -446,7 +446,7 @@ class CacheableBuilder extends Builder
 
             return $success || $result;
         } catch (\Exception $e) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->error("Error flushing query cache: " . $e->getMessage());
             }
             return false;
@@ -814,7 +814,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model
         if ($result) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after mass update for model: " . get_class($this->model));
             }
 
@@ -842,7 +842,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model if any records were deleted
         if ($result) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after mass delete for model: " . get_class($this->model));
             }
 
@@ -873,7 +873,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model
         if ($result) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after increment operation for model: " . get_class($this->model));
             }
 
@@ -904,7 +904,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model
         if ($result) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after decrement operation for model: " . get_class($this->model));
             }
 
@@ -933,7 +933,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model if insert was successful
         if ($result) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after insert operation for model: " . get_class($this->model));
             }
 
@@ -962,7 +962,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model if any records were inserted
         if ($result > 0) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after insertOrIgnore operation for model: " . get_class($this->model));
             }
 
@@ -992,7 +992,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model
         if ($result) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after insertGetId operation for model: " . get_class($this->model));
             }
 
@@ -1022,7 +1022,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model if operation was successful
         if ($result) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after updateOrInsert operation for model: " . get_class($this->model));
             }
 
@@ -1058,7 +1058,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model if any records were affected
         if ($result > 0) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after upsert operation for model: " . get_class($this->model));
             }
 
@@ -1085,7 +1085,7 @@ class CacheableBuilder extends Builder
         parent::truncate();
 
         // Always flush the cache after truncate
-        if (function_exists('logger')) {
+        if (config('model-cache.debug_mode', false) && function_exists('logger')) {
             logger()->info("Flushing cache after truncate operation for model: " . get_class($this->model));
         }
 
@@ -1116,7 +1116,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model
         if ($result) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after force delete for model: " . get_class($this->model));
             }
 
@@ -1150,7 +1150,7 @@ class CacheableBuilder extends Builder
 
         // Flush the cache for this model
         if ($result) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Flushing cache after restore for model: " . get_class($this->model));
             }
 

@@ -2,6 +2,14 @@
 
 All notable changes to `laravel-model-cache` will be documented in this file.
 
+## [1.0.1] - 2025-05-04
+
+### Fixed
+
+- Add debug_mode config check for logger usage in model cache: This ensures logging of cache flush operations only
+  occurs when debug_mode is explicitly enabled in the configuration. It reduces unnecessary log entries in production
+  environments while retaining detailed logs for debugging purposes.
+
 ## [1.0.0] - 2025-05-01
 
 ### Added

@@ -41,7 +41,7 @@ trait HasCachedQueries
         // Flush the cache when a model is created
         static::created(function ($model) {
             static::flushModelCache();
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Cache flushed after creation for model: " . get_class($model));
             }
         });
@@ -49,7 +49,7 @@ trait HasCachedQueries
         // Flush the cache when a model is updated
         static::updated(function ($model) {
             static::flushModelCache();
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Cache flushed after update for model: " . get_class($model));
             }
         });
@@ -57,7 +57,7 @@ trait HasCachedQueries
         // Flush the cache when a model is saved
         static::saved(function ($model) {
             static::flushModelCache();
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Cache flushed after update for model: " . get_class($model));
             }
         });
@@ -65,7 +65,7 @@ trait HasCachedQueries
         // Flush the cache when a model is deleted
         static::deleted(function ($model) {
             static::flushModelCache();
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Cache flushed after deletion for model: " . get_class($model));
             }
         });
@@ -73,7 +73,7 @@ trait HasCachedQueries
         // Flush the cache when a model is restored
         static::registerModelEvent('restored', function ($model) {
             static::flushModelCache();
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Cache flushed after restoration for model: " . get_class($model));
             }
         });
@@ -108,12 +108,12 @@ trait HasCachedQueries
             if (method_exists($cache, 'tags') && $cache->supportsTags()) {
                 try {
                     $result = $cache->tags($tags)->flush();
-                    if (function_exists('logger')) {
+                    if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                         logger()->info("Cache flushed statically for model: " . $modelClass);
                     }
                     return $result;
                 } catch (\Exception $e) {
-                    if (function_exists('logger')) {
+                    if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                         logger()->error("Error flushing cache with tags for model {$modelClass}: " . $e->getMessage());
                     }
                     // Continue to fallback method if tags fail
@@ -122,13 +122,13 @@ trait HasCachedQueries
 
             // Fallback to flush the entire cache
             $result = $cache->flush();
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Entire cache flushed for model: " . $modelClass);
             }
             return $result;
 
         } catch (\Exception $e) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->error("Error in flushCacheStatic for model " . static::class . ": " . $e->getMessage());
             }
             return false;
@@ -169,7 +169,7 @@ trait HasCachedQueries
             ];
 
             // Debug info
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->debug("Attempting to flush cache for model: " . static::class . " (Table: " . $this->getTable() . ")");
             }
 
@@ -177,12 +177,12 @@ trait HasCachedQueries
             if ($this->supportsTags($cache)) {
                 try {
                     $result = $cache->tags($tags)->flush();
-                    if (function_exists('logger')) {
+                    if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                         logger()->info("Cache cleared with tags for model: " . static::class);
                     }
                     return $result;
                 } catch (\Exception $e) {
-                    if (function_exists('logger')) {
+                    if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                         logger()->warning("Error using tags to flush cache: " . $e->getMessage() . ". Falling back to full cache clear.");
                     }
                     // Continue to fallback method
@@ -192,13 +192,13 @@ trait HasCachedQueries
             // For simplicity and to ensure it actually clears the cache,
             // flush the entire cache when tags aren't supported
             $result = $cache->flush();
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->info("Entire cache flushed for model: " . static::class);
             }
             return $result;
 
         } catch (\Exception $e) {
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->error("Error in flushCache: " . $e->getMessage());
             }
             return false;
@@ -224,7 +224,7 @@ trait HasCachedQueries
         } catch (\Exception $e) {
             // If there's an issue with the configured cache driver,
             // fall back to the default driver
-            if (function_exists('logger')) {
+            if (config('model-cache.debug_mode', false) && function_exists('logger')) {
                 logger()->error('Error getting cache driver: ' . $e->getMessage());
             }
             return \Illuminate\Support\Facades\Cache::store(config('cache.default'));
