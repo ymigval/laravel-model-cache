@@ -5,8 +5,13 @@ namespace YMigVal\LaravelModelCache;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\Query\Builder;
 
+/**
+ * @property ?int $cacheMinutes
+ * @property ?string $cachePrefix
+ */
 trait HasCachedQueries
 {
+
     /**
      * Create a new Eloquent query builder for the model.
      *
@@ -15,7 +20,11 @@ trait HasCachedQueries
      */
     public function newEloquentBuilder($query)
     {
-        return new CacheableBuilder($query);
+        return new CacheableBuilder(
+            $query,
+            $this->cacheMinutes,
+            $this->cachePrefix,
+        );
     }
 
     /**
