@@ -16,6 +16,24 @@ class CacheableBuilder extends Builder
      */
     protected $cacheMinutes;
 
+
+    /**
+     * Define a custom cache prefix for this model.
+     * If not set, the global prefix from config('model-cache.cache_key_prefix') will be used.
+     *
+     * @var string
+     */
+    protected $cachePrefix;
+
+
+    public function __construct($builder, $cacheMinutes = null, $cachePrefix = null)
+    {
+        $this->cacheMinutes = $cacheMinutes;
+        $this->cachePrefix = $cachePrefix;
+        parent::__construct($builder);
+    }
+
+
     /**
      * Create a new model instance and store it in the database.
      *
@@ -340,7 +358,8 @@ class CacheableBuilder extends Builder
     public function getCacheKey($columns = ['*'])
     {
         // This is the prefix defined in our package config
-        $configPrefix = config('model-cache.cache_key_prefix', 'model_cache_');
+        $configPrefix = $this->cachePrefix ?? config('model-cache.cache_key_prefix', 'model_cache_');
+
 
         // Create unique components for our key
         $keyComponents = [
@@ -356,10 +375,10 @@ class CacheableBuilder extends Builder
         if (count($this->eagerLoad) > 0) {
             $keyComponents[] = 'with:' . serialize(array_keys($this->eagerLoad));
         }
-    
+
         // Create a hash from all components
         $uniqueKey = md5(implode('|', $keyComponents));
-    
+
         // Add debug logging if enabled
         if (config('model-cache.debug_mode', false) && function_exists('logger')) {
             logger()->debug("Generated cache key: {$uniqueKey} for query: {$this->toSql()} with bindings: " . json_encode($this->getBindings()) . " and relations: " . json_encode(array_keys($this->eagerLoad)));

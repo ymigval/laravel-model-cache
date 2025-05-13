@@ -2,6 +2,22 @@
 
 All notable changes to `laravel-model-cache` will be documented in this file.
 
+## [1.1.0] - 2025-05-13
+
+### Added
+- Added support for custom cache prefix per model via `$cachePrefix` property
+- Added `ModelRelationships` trait to support cache invalidation for Eloquent relationship operations
+- Support for flushing cache on belongsToMany relationship events (saved, attached, detached, synced, updated)
+- New helper methods for relationship operations with automatic cache flushing: `syncRelationshipAndFlushCache()`, `attachRelationshipAndFlushCache()`, `detachRelationshipAndFlushCache()`
+- Debug logging for relationship-triggered cache flush operations when debug_mode is enabled
+
+### Fixed
+- Fixed issue with custom cache minutes (`$cacheMinutes`) definition at the model level
+- Improved cache invalidation when working with Eloquent relationships
+- Better handling of model relationship events to ensure cache consistency
+
+
+
 ## [1.0.1] - 2025-05-04
 
 ### Fixed

@@ -157,6 +157,9 @@ class Post extends Model
     
     // Optional: Override the default cache duration for this model
     protected $cacheMinutes = 120; // 2 hours
+    
+    // Optional: Override the global prefix from config('model-cache.cache_key_prefix') for this model
+    protected $cachePrefix = 'posts_';
 }
 ```
 
