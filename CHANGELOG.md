@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-model-cache` will be documented in this file.
 
+## [1.1.1] - 2025-05-19
+
+### Fixed
+- Fixed implementation of configuration for enabling or disabling cache: The `model-cache.enabled` configuration parameter is now properly checked in the HasCachedQueries trait, ensuring that when cache is disabled via configuration, the standard Eloquent builder is used instead of the cache-enabled version.
+
+
 ## [1.1.0] - 2025-05-13
 
 ### Added
