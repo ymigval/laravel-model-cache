@@ -276,6 +276,12 @@ class CacheableBuilder extends Builder
      */
     public function firstFromCache($columns = ['*'])
     {
+        // Check if caching is globally enabled
+        if (config('model-cache.enabled', true) === false) {
+            $results = $this->take(1)->getWithoutCache($columns);
+            return count($results) > 0 ? $results->first() : null;
+        }
+        
         $results = $this->take(1)->getFromCache($columns);
 
         return count($results) > 0 ? $results->first() : null;
@@ -289,6 +295,11 @@ class CacheableBuilder extends Builder
      */
     public function getFromCache($columns = ['*'])
     {
+        // Check if caching is globally enabled
+        if (config('model-cache.enabled', true) === false) {
+            return $this->getWithoutCache($columns);
+        }
+        
         $minutes = $this->cacheMinutes ?: config('model-cache.cache_duration', 60);
         $cacheKey = $this->getCacheKey($columns);
         $cacheTags = $this->getCacheTags();
@@ -332,6 +343,11 @@ class CacheableBuilder extends Builder
      */
     public function remember($minutes)
     {
+        // Don't set cache minutes if caching is globally disabled
+        if (config('model-cache.enabled', true) === false) {
+            return $this->withoutCache();
+        }
+        
         $this->cacheMinutes = $minutes;
 
         return $this;
