@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-model-cache` will be documented in this file.
 
+## [1.1.2] - 2025-05-21
+
+### Fixed
+- Fixed implementation of the `ModelRelationships` trait to properly handle BelongsToMany operations. Replaced the event-based approach (which was relying on non-existent Laravel events) with a custom BelongsToMany relationship class that flushes the cache after attach, detach, sync, syncWithoutDetaching, and updateExistingPivot operations.
+- Updated `CachingBelongsToMany` class to properly extend Laravel's BelongsToMany class and maintain the relationship contract. This resolves the "must return a relationship instance" error when accessing relationship properties after operations like attach() and detach().
+
 ## [1.1.1] - 2025-05-19
 
 ### Fixed
