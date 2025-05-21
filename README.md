@@ -404,8 +404,9 @@ $post->detachRelationshipAndFlushCache('tags', [1, 3]);
 
 ### Automatic Cache Invalidation
 
-The trait also registers event listeners that automatically flush the cache when Laravel's relationship methods are
-used:
+The trait also automatically flushes the cache when Laravel's standard relationship methods are
+used by providing a custom BelongsToMany relationship implementation:
+
 
 ```php
 // These operations will automatically flush the cache
@@ -413,6 +414,7 @@ $post->tags()->attach(1);
 $post->tags()->detach([2, 3]);
 $post->tags()->sync([1, 4, 5]);
 $post->tags()->updateExistingPivot(1, ['featured' => true]);
+$post->tags()->syncWithoutDetaching([1, 5]);
 ```
 
 This ensures that your cached queries always reflect the current state of your model relationships.
