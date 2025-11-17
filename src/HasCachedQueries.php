@@ -22,8 +22,8 @@ trait HasCachedQueries
     {
         return new CacheableBuilder(
             $query,
-            $this->cacheMinutes,
-            $this->cachePrefix,
+            $this->cacheMinutes ?? null,
+            $this->cachePrefix ?? null,
         );
     }
 
