@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-model-cache` will be documented in this file.
 
+## [1.1.3] - 2025-11-17
+
+### Fixed
+ - HasCachedQueries trait requires explicit property definition.
+
+
 ## [1.1.2] - 2025-05-21
 
 ### Fixed
