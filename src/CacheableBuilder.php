@@ -2,6 +2,7 @@
 
 namespace YMigVal\LaravelModelCache;
 
+use Closure;
 use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -89,10 +90,10 @@ class CacheableBuilder extends Builder
      * Get the first record matching the attributes or create it.
      *
      * @param array $attributes
-     * @param array $values
+     * @param Closure|array $values
      * @return \Illuminate\Database\Eloquent\Model|static
      */
-    public function firstOrCreate(array $attributes = [], array $values = [])
+    public function firstOrCreate(array $attributes = [], Closure|array $values = [])
     {
         $model = parent::firstOrCreate($attributes, $values);
 
