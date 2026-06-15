@@ -2,10 +2,15 @@
 
 All notable changes to `laravel-model-cache` will be documented in this file.
 
-## [1.1.4] - 2026-06-14
+## [1.2.1] - 2026-06-14
 
 ### Fixed
  - Fixed Bugs.
+
+ ## [1.2.0] - 2026-02-23
+
+### Added
+ - Introduces a minor update to the CacheableBuilder class, expanding its flexibility by allowing the firstOrCreate method to accept either a Closure or an array for the $values parameter.
 
 
 ## [1.1.3] - 2025-11-17
