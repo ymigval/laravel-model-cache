@@ -2,6 +2,12 @@
 
 All notable changes to `laravel-model-cache` will be documented in this file.
 
+## [1.1.4] - 2026-06-14
+
+### Fixed
+ - Fixed Bugs.
+
+
 ## [1.1.3] - 2025-11-17
 
 ### Fixed

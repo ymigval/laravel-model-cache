@@ -8,6 +8,9 @@ A simple and efficient caching solution for Laravel Eloquent models.
 
 ## Introduction
 
+[![DLStickers](https://www.dlstickers.com/storage/stickers/original/2026/06/sticker_6a276c706317e.png)](https://www.dlstickers.com)
+
+
 Laravel Model Cache provides a powerful way to cache your Eloquent query results. It transparently integrates with
 Laravel's query builder system to automatically cache all query results, with zero changes to your existing query
 syntax. The package intelligently handles cache invalidation when models are created, updated, deleted, or restored.
