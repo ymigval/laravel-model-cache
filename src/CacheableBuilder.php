@@ -111,10 +111,10 @@ class CacheableBuilder extends Builder
      * Get the first record matching the attributes or instantiate it.
      *
      * @param array $attributes
-     * @param array $values
+     * @param Closure|array $values
      * @return \Illuminate\Database\Eloquent\Model|static
      */
-    public function firstOrNew(array $attributes = [], array $values = [])
+    public function firstOrNew(array $attributes = [], Closure|array $values = [])
     {
         return parent::firstOrNew($attributes, $values);
     }
