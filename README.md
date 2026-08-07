@@ -25,8 +25,8 @@ syntax. The package intelligently handles cache invalidation when models are cre
 
 ## Requirements
 
-- PHP ^7.4, ^8.0, ^8.1, ^8.2, or ^8.3
-- Laravel 8.x, 9.x, 10.x, 11.x, or 12.x
+- PHP ^7.4, ^8.0, ^8.1, ^8.2, ^8.3 or ^8.4
+- Laravel 8.x, 9.x, 10.x, 11.x, 12.x or 13.x
 
 ## Installation
 
