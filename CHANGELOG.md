@@ -2,6 +2,11 @@
 
 All notable changes to `laravel-model-cache` will be documented in this file.
 
+## [1.3.0] - 2026-08-07
+
+### Fixed
+ - Support Laravel 13 and fix firstOrNew compatibility.
+
 ## [1.2.1] - 2026-06-14
 
 ### Fixed
